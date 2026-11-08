@@ -24,20 +24,10 @@ class Order:
     status: str = "В обработке"
 
 @dataclass
+class CartItem:
+    product: Product
+    quantity: int
+
+@dataclass
 class Cart:
-    products: dict = field(default_factory=dict)
-
-    def add_product(self, product_id:int, quantity: int):
-        curr_q = self.products.get(product_id, 0)
-        self.products[product_id] = curr_q + quantity
-
-    def remove_product(self, product_id: int, quantity: None):
-        if product_id not in self.products:
-            raise DomainError("Этого товара нет в корзине")
-        if quantity is None or quantity >= self.products[product_id]:
-            del self.products[product_id]
-        else:
-            self.products[product_id] -= quantity
-
-    def clear(self):
-        self.products.clear()
+    items: dict[CartItem] = field(default_factory=list)
