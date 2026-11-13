@@ -40,6 +40,7 @@ class CartService:
                 return cart
         
         cart.items.append(CartItem(product=product, quantity=quantity))
+        self.cart_repo.save()
         return cart
 
     def remove_from_cart(self, product_id: int, quantity: int = None):
@@ -48,13 +49,16 @@ class CartService:
             if item.product.id == product_id:
                 if quantity is None or quantity >= item.quantity:
                     del cart.items[index]
+                    self.cart_repo.save()
                 else:
                     item.quantity -= quantity
+                    self.cart_repo.save()
                 return cart
         raise DomainError("Этого товара нет в корзине.")
 
     def clear_cart(self):
         self.cart_repo.get().items.clear()
+        self.cart_repo.save()
 
 class OrderService:
     def __init__(self, order_repo: OrderRepository, cart_service: CartService):
@@ -66,10 +70,8 @@ class OrderService:
         if not cart.items:
             raise DomainError("Корзина пуста.")
         
-        total = self.cart_service.get_cart_total()
-        order_id = len(self.order_repo.orders) + 1
-        
-        new_order = Order(id=order_id, items=cart.items.copy(), total_price=total)
+        total = self.cart_service.get_cart_total()        
+        new_order = Order(id=0, items=cart.items.copy(), total_price=total)
         
         self.order_repo.save(new_order)
         self.cart_service.clear_cart()
