@@ -1,18 +1,16 @@
-from repository import ProductRepository, CartRepository, OrderRepository
-from service import ProductService, CartService, OrderService
-from cli import CLI
+import uvicorn
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from api import router
+from models import DomainError
 
-def main():
-    prod_repo = ProductRepository()
-    cart_repo = CartRepository()
-    order_repo = OrderRepository()
+app = FastAPI()
+app.include_router(router)
 
-    prod_service = ProductService(prod_repo)
-    cart_service = CartService(cart_repo, prod_service)
-    order_service = OrderService(order_repo, cart_service)
+@app.exception_handler(DomainError)
+async def domain_error_handler(request: Request, exc: DomainError):
+    return JSONResponse(status_code=400, content={"detail": str(exc)})
 
-    cli = CLI(prod_service, cart_service, order_service)
-    cli.handle_loop()
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run(app, host="0.0.0.0", port=8000)
