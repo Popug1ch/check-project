@@ -20,10 +20,6 @@ class AddToCartRequest(BaseModel):
     product_id: int
     quantity: int
 
-class RemoveFromCartRequest(BaseModel):
-    product_id: int
-    quantity: int | None = None
-
 
 @router.get("/products")
 def get_products():
@@ -51,9 +47,9 @@ def add_2_cart(req: AddToCartRequest):
     cart_service.add_to_cart(req.product_id, req.quantity)
     return {"status": "OK", "message": "Товар добавлен"}
 
-@router.post("/cart/remove")
-def remove_from_cart(req: RemoveFromCartRequest):
-    cart_service.remove_from_cart(req.product_id, req.quantity)
+@router.delete("/cart/items/{product_id}")
+def remove_from_cart(product_id: int, quantity: int | None = None):
+    cart_service.remove_from_cart(product_id, quantity)
     return {"status": "OK", "message": "Товар удалён"}
 
 
